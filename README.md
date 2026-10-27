@@ -26,10 +26,9 @@ GoRemote is a local-network remote control for your TV. It talks directly to you
 ## 📸 Screenshots
 
 | Desktop | Mobile |
-|---|---|
-| _placeholder — add `docs/screenshot-desktop.png`_ | _placeholder — add `docs/screenshot-mobile.png`_ |
+|---------|--------|
+| ![GoRemote Desktop](docs/screenshot-desktop.png) | ![GoRemote Mobile](docs/screenshot-mobile.png) |
 
----
 
 ## 🚀 Quick Start
 
