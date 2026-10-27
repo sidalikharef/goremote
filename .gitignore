@@ -1,27 +1,44 @@
-# Binaries
-goremote
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
+# Internal development plans and blueprints
+docs/development/
+docs/blueprints/
+docs/internal/
+docs/architecture/private/
+*.private.md
+*.internal.md
+*.plan.md
+AGENTS.md
 
-# Test
-*.test
-*.out
+# AI agent local configuration
+.opencode/
+.claude/
+.cursor/
+.codex/
 
-# Config/secrets
+# Credentials and secrets
+.env
+.env.*
+!.env.example
 *.pem
 *.key
+*.p12
+*.pfx
 *.crt
+*auth.json
+*bootstrap*
+secrets/
+credentials/
+
+# Local runtime configuration
 config.json
 goremote.json
-.env
+data/
+tmp/
+logs/
 
-# IDE
-.vscode/
-.idea/
-
-# OS
-.DS_Store
-Thumbs.db
+# Compiled binaries
+/goremote
+*.exe
+*.test
+*.out
+dist/
+build/
