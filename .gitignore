@@ -37,3 +37,6 @@
 *.exe
 *.test
 *.out
+# Internal development docs and agent instructions (keep local only)
+docs/development/
+AGENTS.md
