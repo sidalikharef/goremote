@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  goremote:
+    build: .
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./config:/home/nonroot/.config/goremote
+    restart: unless-stopped

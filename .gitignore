@@ -1,0 +1,27 @@
+# Binaries
+goremote
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test
+*.test
+*.out
+
+# Config/secrets
+*.pem
+*.key
+*.crt
+config.json
+goremote.json
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

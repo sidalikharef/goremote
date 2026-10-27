@@ -229,4 +229,4 @@ If you're hiring, collaborating, or just want to talk shop about local-network p
   <a href="mailto:sidalikharef@gmail.com"><img alt="Email" src="https://img.shields.io/badge/Email-sidalikharef@gmail.com-EA4335?logo=gmail&logoColor=white"></a>
 </p>
 
-> 💼 **Open to work** — remote or on-site, backend / systems / embedded roles. [Resume (PDF)](https://sidalikharef.cc/resume.pdf)
+> 💼 **Open to work** — remote or on-site, backend / systems / embedded roles. [Resume (PDF)](https://sidalikharef.cc/files/Sid-Ali-Kharef-CV-Updated.pdf)

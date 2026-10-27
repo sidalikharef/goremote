@@ -1,0 +1,14 @@
+[Unit]
+Description=GoRemote
+After=network.target
+
+[Service]
+Type=simple
+User=goremote
+Group=goremote
+ExecStart=/usr/local/bin/goremote --addr 127.0.0.1:8080
+Restart=on-failure
+Environment=GOREMOTE_ADDR=127.0.0.1:8080
+
+[Install]
+WantedBy=multi-user.target
