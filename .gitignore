@@ -1,44 +1,39 @@
-# Internal development plans and blueprints
-docs/development/
-docs/blueprints/
-docs/internal/
-docs/architecture/private/
-*.private.md
-*.internal.md
-*.plan.md
-AGENTS.md
+# Private development documentation
+/docs/development/
+/docs/blueprints/
+/docs/internal/
+/AGENTS.md
 
-# AI agent local configuration
-.opencode/
-.claude/
-.cursor/
-.codex/
+# AI development tools
+/.opencode/
+/.codex/
+/.claude/
 
-# Credentials and secrets
+# Local secrets and configuration
 .env
 .env.*
 !.env.example
 *.pem
 *.key
+*.crt
 *.p12
 *.pfx
-*.crt
 *auth.json
 *bootstrap*
-secrets/
-credentials/
+/secrets/
+/credentials/
 
-# Local runtime configuration
-config.json
-goremote.json
-data/
-tmp/
-logs/
+# Runtime files
+/config.json
+/goremote.json
+/data/
+/logs/
+/tmp/
 
-# Compiled binaries
+# Build artifacts
 /goremote
+/dist/
+/build/
 *.exe
 *.test
 *.out
-dist/
-build/
