@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/sidalikharef/goremote/drivers/registry"
-	"github.com/sidalikharef/goremote/internal/auth"
+	authpkg "github.com/sidalikharef/goremote/internal/auth"
 	"github.com/sidalikharef/goremote/internal/validate"
 	"github.com/sidalikharef/goremote/tv"
 )
@@ -21,14 +21,14 @@ var webFS embed.FS
 // Server handles HTTP requests.
 type Server struct {
 	reg  *registry.Registry
-	auth *auth.Store
+	auth *authpkg.Store
 }
 
 func New(reg *registry.Registry) *Server {
 	return &Server{reg: reg}
 }
 
-func NewWithAuth(reg *registry.Registry, a *auth.Store) *Server {
+func NewWithAuth(reg *registry.Registry, a *authpkg.Store) *Server {
 	return &Server{reg: reg, auth: a}
 }
 
@@ -44,6 +44,12 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("/api/apps", s.handleApps)
 	mux.HandleFunc("/api/launch/", s.handleLaunch)
 	mux.HandleFunc("/api/devices", s.handleDevicesList)
+	mux.HandleFunc("/api/devices/vidaa/register", s.handleVidaaManualRegister)
+	mux.HandleFunc("/api/devices/vidaa/pair/start", s.handleVidaaPairStart)
+	mux.HandleFunc("/api/devices/vidaa/pair/submit", s.handleVidaaPairSubmit)
+	mux.HandleFunc("/api/devices/vidaa/pair/status", s.handleVidaaPairStatus)
+	mux.HandleFunc("/api/devices/vidaa/pair/cancel", s.handleVidaaPairCancel)
+	mux.HandleFunc("/api/devices/vidaa/unpair", s.handleVidaaUnpair)
 	mux.HandleFunc("/api/discover", s.handleDiscoverStart)
 	mux.HandleFunc("/api/discover/start", s.handleDiscoverStart)
 	mux.HandleFunc("/api/discover/list", s.handleDiscoverList)
@@ -155,3 +161,38 @@ func (s *Server) handleLaunch(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 }
+
+func (s *Server) handleVidaaPairStart(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	if s.auth != nil {
+		tok := authpkg.GetSessionToken(r)
+		if tok == "" || !s.auth.ValidateSession(tok) {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"status": "pair_start_pending"})
+}
+
+func (s *Server) registerVidaaRoutes() {
+	if s == nil {
+		return
+	}
+	mux := http.NewServeMux()
+	// routes registered by caller
+	_ = mux
+}
+
+
+func (s *Server) registerVIDAARoutes() {
+	if s == nil {
+		return
+	}
+	// routes will be mounted in Routes
+}
+

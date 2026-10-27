@@ -5,15 +5,15 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/sidalikharef/goremote/internal/auth"
+	authpkg "github.com/sidalikharef/goremote/internal/auth"
 )
 
 // AuthServer handles auth endpoints
 type AuthServer struct {
-	auth *auth.Store
+	auth *authpkg.Store
 }
 
-func NewAuth(a *auth.Store) *AuthServer {
+func NewAuth(a *authpkg.Store) *AuthServer {
 	return &AuthServer{auth: a}
 }
 
@@ -32,7 +32,7 @@ func (a *AuthServer) enroll(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	if !auth.IsLoopback(r) {
+	if !authpkg.IsLoopback(r) {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -99,7 +99,7 @@ func (a *AuthServer) logout(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	token := auth.GetSessionToken(r)
+	token := authpkg.GetSessionToken(r)
 	if token != "" {
 		a.auth.RevokeSession(token)
 	}

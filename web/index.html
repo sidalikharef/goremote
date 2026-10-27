@@ -2,97 +2,124 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#111111">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GoRemote</title>
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.svg">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0B0F17">
     <link rel="stylesheet" href="style.css">
-    <script src="app.js" defer></script>
 </head>
 <body>
     <header>
-        <h1>GoRemote</h1>
-        <div class="status-row">
-            <span>Status: <span id="status">disconnected</span></span>
+        <div class="brand">
+            <div class="brand-dot"></div>
+            <span>GoRemote</span>
         </div>
+        <div class="status-bar">
+            <div class="status-dot"></div>
+            <span id="status">disconnected</span>
+        </div>
+        <button id="logoutBtn" class="btn btn-secondary" style="display:none">Logout</button>
     </header>
 
-    <section id="authSection" class="auth-section" aria-label="Authentication">
-        <div id="enrollSection" style="display:none">
-            <h2>First Run Setup</h2>
-            <p>Enroll must be done locally on the server. Use CLI: <code>go run ./cmd/enroll -username USER</code></p>
-            <label>Username: <input type="text" id="enrollUser"></label>
-            <label>Password: <input type="password" id="enrollPass"></label>
-            <label>Bootstrap Token: <input type="text" id="enrollToken"></label>
-            <button id="enrollBtn">Enroll</button>
-        </div>
-        <div id="loginSection" style="display:none">
-            <h2>Login</h2>
-            <label>Username: <input type="text" id="loginUser"></label>
-            <label>Password: <input type="password" id="loginPass"></label>
-            <button id="loginBtn">Login</button>
-        </div>
-        <button id="logoutBtn" style="margin-top:10px">Logout</button>
-    </section>
-
-    <section class="device-section" aria-label="Device selection">
-        <label for="deviceSelect">TV</label>
-        <select id="deviceSelect" aria-label="Select TV device"></select>
-    </section>
-
-    <main id="remoteSection" class="remote" role="main" aria-label="Remote control" style="display:none">
-        <section class="power-row" aria-label="Power and home">
-            <button class="btn" data-key="Power" aria-label="Power">⏻</button>
-            <button class="btn" data-key="Home" aria-label="Home">🏠</button>
-            <button class="btn" data-key="Back" aria-label="Back">↩</button>
-        </section>
-        <section class="dpad" aria-label="Directional pad">
-            <button class="btn up" data-key="Up" aria-label="Up">▲</button>
-            <div class="dpad-mid">
-                <button class="btn" data-key="Left" aria-label="Left">◀</button>
-                <button class="btn select" data-key="Select" aria-label="Select">OK</button>
-                <button class="btn" data-key="Right" aria-label="Right">▶</button>
+    <main>
+        <aside>
+            <div class="card">
+                <div class="card-header">
+                    <h2>Devices</h2>
+                    <p>Manage your TVs</p>
+                </div>
+                <div class="card-body">
+                    <div id="noDevices" class="empty-state">
+                        <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="3" width="20" height="14" rx="2"/>
+                            <line x1="8" y1="21" x2="16" y2="21"/>
+                            <line x1="12" y1="17" x2="12" y2="21"/>
+                        </svg>
+                        <p><strong>No TVs registered</strong></p>
+                        <p>Scan for TVs on your network or add manually.</p>
+                    </div>
+                    <select id="deviceSelect" style="width:100%; padding:10px; background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:10px;"></select>
+                    <button id="startDiscoverBtn" class="btn" style="width:100%; margin-top:12px">Start Discovery</button>
+                    <div id="discoveredList" class="discovered-list" aria-live="polite"></div>
+                </div>
             </div>
-            <button class="btn down" data-key="Down" aria-label="Down">▼</button>
-        </section>
-        <section class="media-row" aria-label="Media controls">
-            <button class="btn" data-key="Rev" aria-label="Rewind">⏪</button>
-            <button class="btn" data-key="Play" aria-label="Play/Pause">⏯</button>
-            <button class="btn" data-key="Fwd" aria-label="Fast Forward">⏩</button>
-        </section>
-        <section class="volume-row" aria-label="Volume controls">
-            <button class="btn" data-key="VolumeDown" aria-label="Volume Down">Vol-</button>
-            <button class="btn" data-key="VolumeMute" aria-label="Mute">Mute</button>
-            <button class="btn" data-key="VolumeUp" aria-label="Volume Up">Vol+</button>
+
+            <div class="card" style="margin-top:24px">
+                <div class="card-header">
+                    <h2>Authentication</h2>
+                </div>
+                <div class="card-body">
+                    <div id="authLogin" style="display:none">
+                        <input id="loginUser" placeholder="Username" style="width:100%; padding:10px; background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:10px; margin-bottom:8px">
+                        <input id="loginPass" type="password" placeholder="Password" style="width:100%; padding:10px; background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:10px; margin-bottom:8px">
+                        <button id="loginBtn" class="btn" style="width:100%">Login</button>
+                    </div>
+                    <div id="authEnroll" style="display:none">
+                        <input id="enrollUser" placeholder="Username" style="width:100%; padding:10px; background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:10px; margin-bottom:8px">
+                        <input id="enrollPass" type="password" placeholder="Password" style="width:100%; padding:10px; background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:10px; margin-bottom:8px">
+                        <input id="enrollToken" placeholder="Bootstrap token" style="width:100%; padding:10px; background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:10px; margin-bottom:8px">
+                        <button id="enrollBtn" class="btn" style="width:100%">Enroll</button>
+                    </div>
+                    <div id="authLogged" style="display:none; color:var(--success)">Logged in</div>
+                </div>
+            </div>
+        </aside>
+
+        <section>
+            <div class="card">
+                <div class="card-header">
+                    <h2>Remote</h2>
+                    <p>Control your TV</p>
+                </div>
+                <div class="card-body">
+                    <div class="remote-grid">
+                        <div></div>
+                        <button class="remote-btn" id="btnUp">▲</button>
+                        <div></div>
+                        <button class="remote-btn" id="btnLeft">◀</button>
+                        <button class="remote-btn center" id="btnSelect">OK</button>
+                        <button class="remote-btn" id="btnRight">▶</button>
+                        <div></div>
+                        <button class="remote-btn" id="btnDown">▼</button>
+                        <div></div>
+                    </div>
+                    <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:16px">
+                        <button class="remote-btn" id="btnBack" style="width:56px;height:56px">↩</button>
+                        <button class="remote-btn" id="btnHome" style="width:56px;height:56px">🏠</button>
+                        <button class="remote-btn" id="btnPlay" style="width:56px;height:56px">▶️</button>
+                        <button class="remote-btn" id="btnPause" style="width:56px;height:56px">⏸</button>
+                        <button class="remote-btn" id="btnVolUp" style="width:56px;height:56px">+</button>
+                        <button class="remote-btn" id="btnVolDown" style="width:56px;height:56px">-</button>
+                        <button class="remote-btn" id="btnMute" style="width:56px;height:56px">🔇</button>
+                        <button class="remote-btn" id="btnPower" style="width:56px;height:56px">⏻</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top:24px">
+                <div class="card-header">
+                    <h2>VIDAA (Experimental)</h2>
+                    <p>Hisense VIDAA support - unverified hardware</p>
+                </div>
+                <div class="card-body">
+                    <input id="vidaaId" placeholder="Device ID" style="width:100%; padding:10px; background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:10px; margin-bottom:8px">
+                    <input id="vidaaName" placeholder="Name" style="width:100%; padding:10px; background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:10px; margin-bottom:8px">
+                    <input id="vidaaAddr" placeholder="IP Address" style="width:100%; padding:10px; background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:10px; margin-bottom:8px">
+                    <label style="display:flex; align-items:center; gap:8px; color:var(--muted); margin-bottom:12px"><input type="checkbox" id="vidaaEnable"> Enable experimental</label>
+                    <button id="vidaaRegisterBtn" class="btn btn-secondary" style="width:100%; margin-bottom:8px">Register VIDAA</button>
+                    <button id="vidaaPairStartBtn" class="btn btn-secondary" style="width:100%; margin-bottom:8px">Start Pairing</button>
+                    <input id="vidaaPin" maxlength="4" placeholder="Enter 4-digit PIN" style="width:100%; padding:10px; background:var(--surface-elev); color:var(--text); border:1px solid var(--border); border-radius:10px; margin-bottom:8px">
+                    <div style="display:flex; gap:8px; margin-bottom:8px">
+                        <button id="vidaaPairSubmitBtn" class="btn btn-secondary" style="flex:1">Submit PIN</button>
+                        <button id="vidaaPairCancelBtn" class="btn btn-secondary" style="flex:1">Cancel</button>
+                    </div>
+                    <button id="vidaaUnpairBtn" class="btn btn-secondary" style="width:100%">Unpair</button>
+                    <div id="vidaaPairMsg" style="color:var(--muted); margin-top:8px; font-size:14px"></div>
+                </div>
+            </div>
         </section>
     </main>
 
-    <section id="appsSection" class="apps-section" aria-label="Apps" style="display:none">
-        <div class="apps-header">
-            <h2>Apps</h2>
-            <button id="refreshApps" class="small-btn">Refresh</button>
-        </div>
-        <div id="appsList" class="apps-list" role="list"></div>
-        <p class="hint">Controls shown only if supported by device</p>
-    </section>
-
-    <section id="discover" class="discover-section" aria-label="Device discovery">
-        <h2>Discovery</h2>
-        <p>Discover Roku devices on the network. Approval required before saving.</p>
-        <button id="startDiscoverBtn">Start Discovery</button>
-        <div id="discoveredList" class="discovered-list"></div>
-        <p class="hint">mDNS and other protocols not verified; not auto-saved.</p>
-    </section>
-
-    <section class="keyboard-section" aria-label="Text input">
-        <h2>Text Input</h2>
-        <p class="hint">Not available</p>
-    </section>
-
-    <footer>
-        <small>GoRemote • Local network only</small>
-    </footer>
+    <script src="app.js"></script>
 </body>
 </html>

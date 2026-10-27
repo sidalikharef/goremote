@@ -8,7 +8,8 @@
     status: 'disconnected',
     authed: false,
     hasUsers: false,
-    discovered: []
+    discovered: [],
+    discovering: false
   };
 
   async function checkAuth() {
@@ -68,40 +69,65 @@
   }
 
   async function discover() {
+    if (state.discovering) return;
     const list = document.getElementById('discoveredList');
-    if (list) list.textContent = 'Discovering...';
+    const btn = document.getElementById('startDiscoverBtn');
+    if (list) {
+      list.setAttribute('aria-live', 'polite');
+      list.textContent = 'Searching for TVs...';
+    }
+    state.discovering = true;
+    if (btn) btn.disabled = true;
     try {
-      const res = await fetch('/api/discover', {method:'POST', credentials:'include'});
-      if (res.ok) {
-        const data = await res.json();
-        state.discovered = data.devices || [];
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      const res = await fetch('/api/discover', {method:'POST', credentials:'include', signal: controller.signal});
+      clearTimeout(timeout);
+      if (res.status === 401 || res.status === 403) {
+        if (list) list.textContent = "Couldn't search for TVs. Authentication required.";
+        return;
+      }
+      if (!res.ok) {
+        if (list) list.textContent = "Couldn't search for TVs. Try again.";
+        return;
+      }
+      const data = await res.json().catch(() => ({devices:[]}));
+      state.discovered = data.devices || [];
+      if (state.discovered.length === 0) {
+        if (list) list.innerHTML = '<div>No TVs found.<br><small>Make sure your TV is powered on and connected to the same network, then try again.</small><br><button id="retryDiscover">Try again</button></div>';
+        document.getElementById('retryDiscover')?.addEventListener('click', () => {
+          if (list) list.textContent = '';
+          discover();
+        });
+      } else {
         renderDiscovered();
-      } else if (list) {
-        list.textContent = 'Discovery failed or unauthorized';
       }
     } catch(e) {
-      if (list) list.textContent = 'Discovery error';
+      if (list) list.textContent = e.name === 'AbortError' ? "Couldn't search for TVs. Timed out. Try again." : "Couldn't search for TVs. Try again.";
+    } finally {
+      state.discovering = false;
+      if (btn) btn.disabled = false;
     }
   }
 
   function renderDiscovered() {
     const list = document.getElementById('discoveredList');
     if (!list) return;
-    list.innerHTML = '';
+    list.innerHTML = '<div>Scanning for supported discoverable devices (Roku SSDP). Hisense VIDAA auto-discovery not verified.</div>';
     for (const d of state.discovered) {
       const div = document.createElement('div');
       div.className = 'disc-item';
-      div.innerHTML = '<strong>' + (d.Name || d.name || d.ID || d.id) + '</strong> ' + (d.Address || d.address) + ' <button data-id="' + (d.ID || d.id) + '" data-addr="' + (d.Address || d.address) + '" data-name="' + (d.Name || d.name) + '">Add</button>';
+      div.innerHTML = '<strong>' + (d.Name || d.name || d.ID || d.id) + '</strong> ' + (d.Address || d.address) + ' (' + (d.Driver || d.driver || 'roku') + ') <button data-id="' + (d.ID || d.id) + '" data-addr="' + (d.Address || d.address) + '" data-name="' + (d.Name || d.name) + '" data-driver="roku">Add</button>';
       list.appendChild(div);
     }
     list.querySelectorAll('button').forEach(btn => {
-      btn.onclick = () => saveDiscovered(btn.getAttribute('data-id'), btn.getAttribute('data-addr'), btn.getAttribute('data-name'));
+      btn.onclick = () => saveDiscovered(btn.getAttribute('data-id'), btn.getAttribute('data-addr'), btn.getAttribute('data-name'), btn.getAttribute('data-driver') || 'roku');
     });
   }
 
-  async function saveDiscovered(id, addr, name) {
+  async function saveDiscovered(id, addr, name, driver) {
     try {
-      const res = await fetch('/api/discover/save', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({id:id, address:addr, name:name, driver:'roku'})});
+      const res = await fetch('/api/discover/save', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({id:id, address:addr, name:name, driver:driver||'roku'})});
       if (res.ok || res.status === 201) {
         alert('Saved');
         fetchDevices();
@@ -180,100 +206,127 @@
     }
   }
 
+  function updateAuthUI() {
+    const login = document.getElementById('authLogin');
+    const enroll = document.getElementById('authEnroll');
+    const logged = document.getElementById('authLogged');
+    if (state.authed) {
+      if (login) login.style.display = 'none';
+      if (enroll) enroll.style.display = 'none';
+      if (logged) logged.style.display = 'block';
+    } else if (state.hasUsers) {
+      if (login) login.style.display = 'block';
+      if (enroll) enroll.style.display = 'none';
+      if (logged) logged.style.display = 'none';
+    } else {
+      if (login) login.style.display = 'none';
+      if (enroll) enroll.style.display = 'block';
+      if (logged) logged.style.display = 'none';
+    }
+  }
+
   function updateAppsUI() {
     const list = document.getElementById('appsList');
     if (!list) return;
     list.innerHTML = '';
     for (const a of state.apps) {
       const btn = document.createElement('button');
-      btn.textContent = a.name || a.id;
-      btn.className = 'app-btn';
+      btn.textContent = a.title || a.name || a.id;
       btn.onclick = () => launchApp(a.id);
       list.appendChild(btn);
     }
   }
 
-  function updateAuthUI() {
-    const authSec = document.getElementById('authSection');
-    const loginSec = document.getElementById('loginSection');
-    const enrollSec = document.getElementById('enrollSection');
-    const remoteSec = document.getElementById('remoteSection');
-    const appsSec = document.getElementById('appsSection');
-    if (authSec) authSec.style.display = 'block';
-    if (!state.hasUsers && enrollSec) { enrollSec.style.display = 'block'; if (loginSec) loginSec.style.display = 'none'; }
-    if (state.hasUsers && loginSec) { loginSec.style.display = 'block'; if (enrollSec) enrollSec.style.display = 'none'; }
-    if (state.authed) {
-      if (remoteSec) remoteSec.style.display = 'block';
-      if (appsSec) appsSec.style.display = 'block';
-      if (loginSec) loginSec.style.display = 'none';
-      if (enrollSec) enrollSec.style.display = 'none';
-    } else {
-      if (remoteSec) remoteSec.style.display = 'none';
-      if (appsSec) appsSec.style.display = 'none';
-    }
-  }
-
-  function init() {
-    document.querySelectorAll('[data-key]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const key = btn.getAttribute('data-key');
-        if (key) sendKey(key);
-      });
-    });
-
-    document.getElementById('refreshApps')?.addEventListener('click', fetchApps);
+  function bindButtons() {
     document.getElementById('loginBtn')?.addEventListener('click', login);
     document.getElementById('logoutBtn')?.addEventListener('click', logout);
     document.getElementById('enrollBtn')?.addEventListener('click', enroll);
     document.getElementById('startDiscoverBtn')?.addEventListener('click', discover);
-    checkAuth();
+    document.getElementById('btnUp')?.addEventListener('click', () => sendKey('Up'));
+    document.getElementById('btnDown')?.addEventListener('click', () => sendKey('Down'));
+    document.getElementById('btnLeft')?.addEventListener('click', () => sendKey('Left'));
+    document.getElementById('btnRight')?.addEventListener('click', () => sendKey('Right'));
+    document.getElementById('btnSelect')?.addEventListener('click', () => sendKey('Select'));
+    document.getElementById('btnBack')?.addEventListener('click', () => sendKey('Back'));
+    document.getElementById('btnHome')?.addEventListener('click', () => sendKey('Home'));
+    document.getElementById('btnPlay')?.addEventListener('click', () => sendKey('Play'));
+    document.getElementById('btnPause')?.addEventListener('click', () => sendKey('Pause'));
+    document.getElementById('btnVolUp')?.addEventListener('click', () => sendKey('VolumeUp'));
+    document.getElementById('btnVolDown')?.addEventListener('click', () => sendKey('VolumeDown'));
+    document.getElementById('btnMute')?.addEventListener('click', () => sendKey('VolumeMute'));
+    document.getElementById('btnPower')?.addEventListener('click', () => sendKey('Power'));
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
-
-  function saveSelectedDevice() {
-    const sel = document.getElementById('deviceSelect');
-    if (sel && sel.value) {
-      try {
-        localStorage.setItem('goremote_selected_device', sel.value);
-      } catch(e) {}
-    }
-  }
-
-  function restoreSelectedDevice() {
+  async function vidaaRegister() {
+    const id = document.getElementById('vidaaId')?.value || '';
+    const name = document.getElementById('vidaaName')?.value || 'VIDAA TV';
+    const addr = document.getElementById('vidaaAddr')?.value || '';
+    const enable = document.getElementById('vidaaEnable')?.checked || false;
     try {
-      const v = localStorage.getItem('goremote_selected_device');
-      if (v) {
-        const sel = document.getElementById('deviceSelect');
-        if (sel) sel.value = v;
+      const res = await fetch('/api/devices/vidaa/register', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({id:id, name:name, address:addr, enable:enable})});
+      if (res.ok) {
+        alert('Registered (experimental)');
+        fetchDevices();
+      } else {
+        alert('Registration failed');
       }
+    } catch(e) { alert('Error'); }
+  }
+
+  async function vidaaPairStart() {
+    try {
+      const res = await fetch('/api/devices/vidaa/pair/start', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: '{}'});
+      if (res.ok) {
+        const el = document.getElementById('vidaaPairMsg');
+        if (el) el.textContent = 'Pairing started';
+      } else {
+        alert('Pair start failed');
+      }
+    } catch(e) { alert('Error'); }
+  }
+
+  async function vidaaPairSubmit() {
+    const pin = document.getElementById('vidaaPin')?.value || '';
+    if (pin.length !== 4) { alert('Enter 4 digits'); return; }
+    try {
+      const res = await fetch('/api/devices/vidaa/pair/submit', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: JSON.stringify({pin:pin})});
+      if (res.ok) {
+        const el = document.getElementById('vidaaPairMsg');
+        if (el) el.textContent = 'Submitted';
+      } else {
+        alert('Pair failed');
+      }
+    } catch(e) { alert('Error'); }
+  }
+
+  async function vidaaPairCancel() {
+    try {
+      await fetch('/api/devices/vidaa/pair/cancel', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: '{}'});
     } catch(e) {}
   }
 
-  function init() {
-    document.querySelectorAll('[data-key]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const key = btn.getAttribute('data-key');
-        if (key) sendKey(key);
-      });
-    });
+  async function vidaaUnpair() {
+    try {
+      await fetch('/api/devices/vidaa/unpair', {method:'POST', headers:{'Content-Type':'application/json'}, credentials:'include', body: '{}'});
+      alert('Unpaired');
+      fetchDevices();
+    } catch(e) { alert('Error'); }
+  }
 
-    document.getElementById('refreshApps')?.addEventListener('click', fetchApps);
-    document.getElementById('loginBtn')?.addEventListener('click', login);
-    document.getElementById('logoutBtn')?.addEventListener('click', logout);
-    document.getElementById('enrollBtn')?.addEventListener('click', enroll);
-    document.getElementById('startDiscoverBtn')?.addEventListener('click', discover);
-    const sel = document.getElementById('deviceSelect');
-    if (sel) {
-      sel.addEventListener('change', saveSelectedDevice);
-    }
+  function bindVidaa() {
+    document.getElementById('vidaaRegisterBtn')?.addEventListener('click', vidaaRegister);
+    document.getElementById('vidaaPairStartBtn')?.addEventListener('click', vidaaPairStart);
+    document.getElementById('vidaaPairSubmitBtn')?.addEventListener('click', vidaaPairSubmit);
+    document.getElementById('vidaaPairCancelBtn')?.addEventListener('click', vidaaPairCancel);
+    document.getElementById('vidaaUnpairBtn')?.addEventListener('click', vidaaUnpair);
+  }
+
+  function init() {
     checkAuth();
-    setTimeout(restoreSelectedDevice, 500);
+    bindButtons();
+    bindVidaa();
+    updateAuthUI();
+    fetchDevices();
   }
 
   if (document.readyState === 'loading') {

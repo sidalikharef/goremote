@@ -14,6 +14,7 @@ import (
 	"github.com/sidalikharef/goremote/config"
 	"github.com/sidalikharef/goremote/drivers/registry"
 	"github.com/sidalikharef/goremote/drivers/roku"
+	vidaa "github.com/sidalikharef/goremote/drivers/vidaa"
 	"github.com/sidalikharef/goremote/httpapi"
 	"github.com/sidalikharef/goremote/internal/auth"
 	"github.com/sidalikharef/goremote/internal/validate"
@@ -29,10 +30,7 @@ func main() {
 	)
 	flag.Parse()
 
-	if *tvIP == "" && *driver == "roku" {
-		fmt.Fprintln(os.Stderr, "tv ip required")
-		os.Exit(1)
-	}
+	// Allow zero-TV startup for multi-device support
 
 	dur, err := time.ParseDuration(*timeout)
 	if err != nil {
@@ -40,6 +38,7 @@ func main() {
 	}
 
 	reg := registry.New()
+	reg.RegisterFactory("vidaa", vidaa.Factory)
 	if cfg, err := config.Load(*confPath); err == nil {
 		for _, d := range cfg.Devices {
 			if _, err := reg.RegisterDevice(d.ID, d.Name, d.Driver, d.Address); err == nil {
@@ -120,3 +119,5 @@ func getEnv(k, def string) string {
 	}
 	return def
 }
+
+// experimental VIDAA disabled by default
