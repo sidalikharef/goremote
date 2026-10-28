@@ -188,11 +188,9 @@ func (s *Server) registerVidaaRoutes() {
 	_ = mux
 }
 
-
 func (s *Server) registerVIDAARoutes() {
 	if s == nil {
 		return
 	}
 	// routes will be mounted in Routes
 }
-

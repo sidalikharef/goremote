@@ -9,8 +9,8 @@ import (
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	vidaa "github.com/sidalikharef/goremote/drivers/vidaa"
 	"github.com/sidalikharef/goremote/drivers/registry"
+	vidaa "github.com/sidalikharef/goremote/drivers/vidaa"
 	"github.com/sidalikharef/goremote/internal/auth"
 )
 

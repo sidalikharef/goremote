@@ -3,8 +3,8 @@
   "short_name": "GoRemote",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#111111",
-  "theme_color": "#111111",
+  "background_color": "#0B0F17",
+  "theme_color": "#0B0F17",
   "icons": [
     {
       "src": "/icon.svg",

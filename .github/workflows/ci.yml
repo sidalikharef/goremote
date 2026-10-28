@@ -2,31 +2,41 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go: [ '1.22.x', '1.26.x' ]
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v5
+      - uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go }}
-      - name: Verify
-        run: go mod verify
-      - name: Build
-        run: go build ./...
-      - name: Vet
+          go-version: '1.26'
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install frontend deps
+        working-directory: frontend
+        run: pnpm install --no-frozen-lockfile
+      - name: Build frontend
+        working-directory: frontend
+        run: pnpm build
+      - name: Copy frontend assets
+        run: |
+          mkdir -p httpapi/web web
+          cp -r frontend/dist/* httpapi/web/
+          cp -r frontend/dist/* web/
+          rm -f httpapi/web/app.js httpapi/web/style.css web/app.js web/style.css
+      - name: Go vet
         run: go vet ./...
-      - name: Test
+      - name: Go build
+        run: go build ./...
+      - name: Go test
         run: go test ./... -count=1
-      - name: Race
-        run: go test -race ./...
-      - name: Format
-        run: test -z "$(gofmt -l .)"

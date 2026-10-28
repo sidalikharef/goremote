@@ -1,140 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0B0F17" />
     <title>GoRemote</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0B0F17">
-</head>
-<body>
-    <header class="app-header">
-        <div class="brand">
-            <div class="brand-mark"></div>
-            <div class="brand-text">GoRemote</div>
-        </div>
-        <div class="header-actions">
-            <span class="status-pill"><span class="dot"></span><span id="status">disconnected</span></span>
-            <select id="deviceSelect" class="device-select"></select>
-            <button id="logoutBtn" class="btn ghost">Logout</button>
-        </div>
-    </header>
-
-    <main class="layout">
-        <aside class="sidebar">
-            <nav class="nav">
-                <button class="nav-item active">Remote</button>
-                <button class="nav-item">My TVs</button>
-                <button class="nav-item" id="navDiscover">Discover</button>
-                <button class="nav-item">Settings</button>
-            </nav>
-            <section class="panel">
-                <header class="panel-header">
-                    <h2>Discover TVs</h2>
-                    <p>Find compatible devices on your network</p>
-                </header>
-                <div class="panel-body">
-                    <button id="startDiscoverBtn" class="btn primary full">Scan for TVs</button>
-                    <div id="discoveredList" class="discover-list" aria-live="polite"></div>
-                </div>
-            </section>
-            <section class="panel">
-                <header class="panel-header">
-                    <h2>Experimental VIDAA</h2>
-                    <p>Hisense VIDAA support - unverified</p>
-                </header>
-                <div class="panel-body">
-                    <input id="vidaaId" class="input" placeholder="Device ID">
-                    <input id="vidaaName" class="input" placeholder="Name">
-                    <input id="vidaaAddr" class="input" placeholder="IP Address">
-                    <label class="checkbox"><input type="checkbox" id="vidaaEnable"> Enable experimental</label>
-                    <button id="vidaaRegisterBtn" class="btn secondary full">Register</button>
-                    <button id="vidaaPairStartBtn" class="btn secondary full">Start Pairing</button>
-                    <input id="vidaaPin" class="input" maxlength="4" placeholder="PIN">
-                    <div class="row">
-                        <button id="vidaaPairSubmitBtn" class="btn secondary">Submit</button>
-                        <button id="vidaaPairCancelBtn" class="btn secondary">Cancel</button>
-                    </div>
-                    <button id="vidaaUnpairBtn" class="btn ghost full">Unpair</button>
-                    <div id="vidaaPairMsg" class="muted"></div>
-                </div>
-            </section>
-        </aside>
-
-        <section class="content">
-            <section id="authSection" class="panel">
-                <header class="panel-header">
-                    <h2>Authentication</h2>
-                </header>
-                <div class="panel-body">
-                    <div id="enrollSection" style="display:none">
-                        <div class="grid-2">
-                            <input id="enrollUser" class="input" placeholder="Username">
-                            <input id="enrollPass" class="input" type="password" placeholder="Password">
-                        </div>
-                        <input id="enrollToken" class="input" placeholder="Bootstrap token">
-                        <button id="enrollBtn" class="btn primary">Enroll</button>
-                    </div>
-                    <div id="loginSection" style="display:none">
-                        <div class="grid-2">
-                            <input id="loginUser" class="input" placeholder="Username">
-                            <input id="loginPass" class="input" type="password" placeholder="Password">
-                        </div>
-                        <button id="loginBtn" class="btn primary">Login</button>
-                    </div>
-                </div>
-            </section>
-
-            <section id="emptyState" class="hero">
-                <div class="hero-inner">
-                    <h1>Connect your first TV</h1>
-                    <p>Discover compatible TVs on your local network or add one manually.</p>
-                    <div class="hero-actions">
-                        <button class="btn primary" onclick="document.getElementById('startDiscoverBtn').click()">Scan for TVs</button>
-                    </div>
-                    <p class="muted">Roku supports discovery. Experimental VIDAA may require manual registration.</p>
-                </div>
-            </section>
-
-            <section class="remote-panel">
-                <header class="panel-header">
-                    <h2>Remote Control</h2>
-                    <p>Navigate and control your TV</p>
-                </header>
-                <div class="panel-body remote-body">
-                    <div class="dpad">
-                        <button class="dpad-btn up" id="btnUp">▲</button>
-                        <button class="dpad-btn left" id="btnLeft">◀</button>
-                        <button class="dpad-btn center" id="btnSelect">OK</button>
-                        <button class="dpad-btn right" id="btnRight">▶</button>
-                        <button class="dpad-btn down" id="btnDown">▼</button>
-                    </div>
-                    <div class="transport">
-                        <button class="btn icon" id="btnBack">Back</button>
-                        <button class="btn icon" id="btnHome">Home</button>
-                        <button class="btn icon" id="btnPower">Power</button>
-                    </div>
-                    <div class="media-row">
-                        <button class="btn" id="btnPlay">Play</button>
-                        <button class="btn" id="btnPause">Pause</button>
-                    </div>
-                    <div class="volume-row">
-                        <button class="btn" id="btnVolDown">Vol -</button>
-                        <button class="btn" id="btnMute">Mute</button>
-                        <button class="btn" id="btnVolUp">Vol +</button>
-                    </div>
-                </div>
-            </section>
-        </section>
-    </main>
-
-    <nav class="bottom-nav">
-        <button class="bottom-nav-item active">Remote</button>
-        <button class="bottom-nav-item" id="navDiscoverMobile">Discover</button>
-        <button class="bottom-nav-item">My TVs</button>
-    </nav>
-
-    <script src="app.js"></script>
-</body>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <script type="module" crossorigin src="/assets/index-BdSIyLYA.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DESChiFK.css">
+  </head>
+  <body class="bg-background text-foreground">
+    <div id="root"></div>
+  </body>
 </html>

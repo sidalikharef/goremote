@@ -13,20 +13,20 @@ import (
 )
 
 type Config struct {
-	Broker   string
-	ClientID string
-	Username string
-	Password string
-	TLS      *tls.Config
+	Broker    string
+	ClientID  string
+	Username  string
+	Password  string
+	TLS       *tls.Config
 	KeepAlive time.Duration
-	Timeout  time.Duration
+	Timeout   time.Duration
 }
 
 type Client struct {
-	mu     sync.RWMutex
-	c      mqtt.Client
-	opts   *mqtt.ClientOptions
-	state  string
+	mu    sync.RWMutex
+	c     mqtt.Client
+	opts  *mqtt.ClientOptions
+	state string
 }
 
 func New(cfg Config) (*Client, error) {

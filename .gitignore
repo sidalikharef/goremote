@@ -40,3 +40,13 @@
 # Internal development docs and agent instructions (keep local only)
 docs/development/
 AGENTS.md
+
+# Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+.pnpm-store/
+
+# Build outputs
+httpapi/web/assets/
+web/assets/

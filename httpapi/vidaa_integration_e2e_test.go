@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	vidaa "github.com/sidalikharef/goremote/drivers/vidaa"
 	"github.com/sidalikharef/goremote/drivers/registry"
+	vidaa "github.com/sidalikharef/goremote/drivers/vidaa"
 	"github.com/sidalikharef/goremote/internal/auth"
 )
 

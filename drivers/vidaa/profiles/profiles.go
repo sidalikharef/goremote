@@ -11,15 +11,15 @@ const (
 )
 
 type Profile struct {
-	Family            FirmwareFamily
-	MQTTVERSION       byte
-	Port              int
-	RequiresMTLS      bool
-	WildcardSubs      bool
-	PinPairing        bool
-	CredentialStyle   string
-	Notes             string
-	Sources           []string
+	Family          FirmwareFamily
+	MQTTVERSION     byte
+	Port            int
+	RequiresMTLS    bool
+	WildcardSubs    bool
+	PinPairing      bool
+	CredentialStyle string
+	Notes           string
+	Sources         []string
 }
 
 func Get(f FirmwareFamily) Profile {

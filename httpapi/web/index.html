@@ -1,98 +1,16 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#111111">
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0B0F17" />
     <title>GoRemote</title>
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.svg">
-    <link rel="stylesheet" href="style.css">
-    <script src="app.js" defer></script>
-</head>
-<body>
-    <header>
-        <h1>GoRemote</h1>
-        <div class="status-row">
-            <span>Status: <span id="status">disconnected</span></span>
-        </div>
-    </header>
-
-    <section id="authSection" class="auth-section" aria-label="Authentication">
-        <div id="enrollSection" style="display:none">
-            <h2>First Run Setup</h2>
-            <p>Enroll must be done locally on the server. Use CLI: <code>go run ./cmd/enroll -username USER</code></p>
-            <label>Username: <input type="text" id="enrollUser"></label>
-            <label>Password: <input type="password" id="enrollPass"></label>
-            <label>Bootstrap Token: <input type="text" id="enrollToken"></label>
-            <button id="enrollBtn">Enroll</button>
-        </div>
-        <div id="loginSection" style="display:none">
-            <h2>Login</h2>
-            <label>Username: <input type="text" id="loginUser"></label>
-            <label>Password: <input type="password" id="loginPass"></label>
-            <button id="loginBtn">Login</button>
-        </div>
-        <button id="logoutBtn" style="margin-top:10px">Logout</button>
-    </section>
-
-    <section class="device-section" aria-label="Device selection">
-        <label for="deviceSelect">TV</label>
-        <select id="deviceSelect" aria-label="Select TV device"></select>
-    </section>
-
-    <main id="remoteSection" class="remote" role="main" aria-label="Remote control" style="display:none">
-        <section class="power-row" aria-label="Power and home">
-            <button class="btn" data-key="Power" aria-label="Power">⏻</button>
-            <button class="btn" data-key="Home" aria-label="Home">🏠</button>
-            <button class="btn" data-key="Back" aria-label="Back">↩</button>
-        </section>
-        <section class="dpad" aria-label="Directional pad">
-            <button class="btn up" data-key="Up" aria-label="Up">▲</button>
-            <div class="dpad-mid">
-                <button class="btn" data-key="Left" aria-label="Left">◀</button>
-                <button class="btn select" data-key="Select" aria-label="Select">OK</button>
-                <button class="btn" data-key="Right" aria-label="Right">▶</button>
-            </div>
-            <button class="btn down" data-key="Down" aria-label="Down">▼</button>
-        </section>
-        <section class="media-row" aria-label="Media controls">
-            <button class="btn" data-key="Rev" aria-label="Rewind">⏪</button>
-            <button class="btn" data-key="Play" aria-label="Play/Pause">⏯</button>
-            <button class="btn" data-key="Fwd" aria-label="Fast Forward">⏩</button>
-        </section>
-        <section class="volume-row" aria-label="Volume controls">
-            <button class="btn" data-key="VolumeDown" aria-label="Volume Down">Vol-</button>
-            <button class="btn" data-key="VolumeMute" aria-label="Mute">Mute</button>
-            <button class="btn" data-key="VolumeUp" aria-label="Volume Up">Vol+</button>
-        </section>
-    </main>
-
-    <section id="appsSection" class="apps-section" aria-label="Apps" style="display:none">
-        <div class="apps-header">
-            <h2>Apps</h2>
-            <button id="refreshApps" class="small-btn">Refresh</button>
-        </div>
-        <div id="appsList" class="apps-list" role="list"></div>
-        <p class="hint">Controls shown only if supported by device</p>
-    </section>
-
-    <section id="discover" class="discover-section" aria-label="Device discovery">
-        <h2>Discovery</h2>
-        <p>Discover Roku devices on the network. Approval required before saving.</p>
-        <button id="startDiscoverBtn">Start Discovery</button>
-        <div id="discoveredList" class="discovered-list"></div>
-        <p class="hint">mDNS and other protocols not verified; not auto-saved.</p>
-    </section>
-
-    <section class="keyboard-section" aria-label="Text input">
-        <h2>Text Input</h2>
-        <p class="hint">Not available</p>
-    </section>
-
-    <footer>
-        <small>GoRemote • Local network only</small>
-    </footer>
-</body>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <script type="module" crossorigin src="/assets/index-BdSIyLYA.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DESChiFK.css">
+  </head>
+  <body class="bg-background text-foreground">
+    <div id="root"></div>
+  </body>
 </html>

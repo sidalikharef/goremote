@@ -1,0 +1,5 @@
+export { RemotePage } from './RemotePage'
+export { DevicesPage } from './DevicesPage'
+export { DiscoveryPage } from './DiscoveryPage'
+export { SettingsPage } from './SettingsPage'
+export { AuthPage } from './AuthPage'

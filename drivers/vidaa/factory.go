@@ -11,7 +11,7 @@ import (
 
 var experimentalEnabled = false
 
-func EnableExperimental() { experimentalEnabled = true }
+func EnableExperimental()  { experimentalEnabled = true }
 func DisableExperimental() { experimentalEnabled = false }
 
 func Factory(opts map[string]string) (tv.Driver, error) {
