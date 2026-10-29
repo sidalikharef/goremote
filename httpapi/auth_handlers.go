@@ -94,13 +94,27 @@ func (a *AuthServer) login(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
-func (a *AuthServer) logout(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
+func (a *AuthServer) session(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
 	token := authpkg.GetSessionToken(r)
-	if token != "" {
+	if token == "" || a.auth == nil || !a.auth.ValidateSession(token) {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok", "authenticated": "true"})
+}
+
+func (a *AuthServer) logout(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost && r.Method != http.MethodGet {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	token := authpkg.GetSessionToken(r)
+	if token != "" && a.auth != nil {
 		a.auth.RevokeSession(token)
 	}
 	http.SetCookie(w, &http.Cookie{
@@ -112,4 +126,6 @@ func (a *AuthServer) logout(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   -1,
 	})
 	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }

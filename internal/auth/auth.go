@@ -76,8 +76,10 @@ func (s *Store) save() error {
 		users = append(users, u)
 	}
 	s.mu.RUnlock()
-	if err := os.MkdirAll(filepath.Dir(s.path), 0755); err != nil {
+	if err := os.MkdirAll(filepath.Dir(s.path), 0700); err != nil {
 		return err
+	}
+	if err := os.Chmod(filepath.Dir(s.path), 0700); err != nil {
 	}
 	data, err := json.MarshalIndent(users, "", "  ")
 	if err != nil {

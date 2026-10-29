@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -22,6 +23,14 @@ func main() {
 	if *username == "" {
 		fmt.Fprintln(os.Stderr, "username required")
 		os.Exit(1)
+	}
+	// Ensure config directory exists with secure permissions
+	if err := os.MkdirAll(configDir(*conf), 0700); err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
+	if err := os.Chmod(configDir(*conf), 0700); err != nil {
+		// best effort
 	}
 	store := auth.New(*conf + ".auth.json")
 	if store.HasUsers() {
@@ -65,4 +74,8 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Println("enrolled successfully")
+}
+
+func configDir(p string) string {
+	return filepath.Dir(p)
 }

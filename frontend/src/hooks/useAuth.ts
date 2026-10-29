@@ -35,7 +35,10 @@ export function useLogout() {
   return useMutation({
     mutationFn: () => api.post('/api/auth/logout'),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['auth', 'status'] })
+      qc.clear()
+    },
+    onError: () => {
+      qc.clear()
     },
   })
 }

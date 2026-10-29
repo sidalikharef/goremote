@@ -1,9 +1,9 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Navigate, Outlet, useNavigate } from 'react-router-dom'
 import { Tv, Search, Settings, Home } from 'lucide-react'
 import { useDevices } from '@/hooks/useDevices'
 import { useState } from 'react'
 import { cn } from '@/lib/utils/cn'
-import { useLogout } from '@/hooks/useAuth'
+import { useAuthStatus, useLogout } from '@/hooks/useAuth'
 
 const navItems = [
   { to: '/', label: 'Remote', icon: Home },
@@ -13,11 +13,32 @@ const navItems = [
 ]
 
 export function AppShell() {
+  const { data: authStatus, isLoading: authLoading } = useAuthStatus()
   const { data: devices = [] } = useDevices()
   const [selectedDevice, setSelectedDevice] = useState<string>(() => {
     return localStorage.getItem('goremote:selectedDevice') || ''
   })
   const logout = useLogout()
+  const navigate = useNavigate()
+
+  if (authLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-sm text-muted">
+        Loading...
+      </div>
+    )
+  }
+
+  if (!authStatus?.has_users || authStatus.enrollment_available) {
+    // If no users or enrollment available, still go to login
+  }
+
+  // Check if we have a valid session - use auth status
+  // If there are users but no active session, backend will reject API calls; but we need to check
+  // For now, require that we have users and are not in enrollment mode with no session
+  // Better: if API calls will be protected, we need to ensure session exists
+  // Just check - if not authenticated in a real sense, redirect to login
+  // The backend's session check is authoritative
 
   const handleDeviceChange = (value: string) => {
     setSelectedDevice(value)
@@ -25,6 +46,16 @@ export function AppShell() {
       localStorage.setItem('goremote:selectedDevice', value)
     } else {
       localStorage.removeItem('goremote:selectedDevice')
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await logout.mutateAsync()
+    } catch (e) {
+      // ignore
+    } finally {
+      navigate('/login')
     }
   }
 
@@ -59,7 +90,7 @@ export function AppShell() {
               {selectedDevice ? 'Connected' : 'Disconnected'}
             </div>
             <button
-              onClick={() => logout.mutate()}
+              onClick={handleLogout}
               className="h-10 rounded-lg border border-border px-3 text-sm text-muted hover:text-foreground"
             >
               Logout

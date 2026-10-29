@@ -71,7 +71,12 @@ func RequireAuth(store interface {
 				return
 			}
 			if r.Method == http.MethodGet {
-				if strings.HasSuffix(r.URL.Path, ".css") || strings.HasSuffix(r.URL.Path, ".js") || strings.HasSuffix(r.URL.Path, ".svg") || strings.HasSuffix(r.URL.Path, ".png") || strings.HasSuffix(r.URL.Path, ".json") || strings.HasSuffix(r.URL.Path, ".ico") {
+				if strings.HasSuffix(r.URL.Path, ".css") || strings.HasSuffix(r.URL.Path, ".js") || strings.HasSuffix(r.URL.Path, ".svg") || strings.HasSuffix(r.URL.Path, ".png") || strings.HasSuffix(r.URL.Path, ".json") || strings.HasSuffix(r.URL.Path, ".ico") || strings.HasSuffix(r.URL.Path, ".txt") {
+					next.ServeHTTP(w, r)
+					return
+				}
+				// Allow SPA routes (non-API) for GET requests so frontend can handle auth
+				if !strings.HasPrefix(r.URL.Path, "/api/") {
 					next.ServeHTTP(w, r)
 					return
 				}

@@ -1,4 +1,4 @@
-import { useOutletContext } from 'react-router-dom'
+import { useNavigate, useOutletContext } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { useDevices, useKeypress } from '@/hooks/useDevices'
@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils/cn'
 
 export function RemotePage() {
+  const navigate = useNavigate()
   const { selectedDevice } = useOutletContext<{ selectedDevice: string }>()
   const { data: devices = [] } = useDevices()
   const keypress = useKeypress()
@@ -27,8 +28,8 @@ export function RemotePage() {
           <p className="mt-2 text-muted">Find compatible TVs on your local network or add one manually.</p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <Button onClick={() => (window.location.href = '/discovery')}>Scan for TVs</Button>
-          <Button variant="secondary" onClick={() => (window.location.href = '/devices')}>Add TV manually</Button>
+          <Button onClick={() => navigate('/discovery')}>Scan for TVs</Button>
+          <Button variant="secondary" onClick={() => navigate('/devices')}>Add TV manually</Button>
         </div>
         <Card className="w-full max-w-md">
           <CardHeader className="text-left">

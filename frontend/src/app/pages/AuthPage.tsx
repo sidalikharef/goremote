@@ -6,32 +6,35 @@ import { Button } from '@/components/ui/button'
 import { useNavigate } from 'react-router-dom'
 
 export function AuthPage() {
-  const { data: status } = useAuthStatus()
+  const { data: status, isLoading } = useAuthStatus()
   const enroll = useEnroll()
   const login = useLogin()
   const navigate = useNavigate()
 
   const [enrollForm, setEnrollForm] = useState({ username: '', password: '', bootstrap_token: '' })
   const [loginForm, setLoginForm] = useState({ username: '', password: '' })
+  const [error, setError] = useState('')
 
   const handleEnroll = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
     try {
       await enroll.mutateAsync(enrollForm)
       await login.mutateAsync({ username: enrollForm.username, password: enrollForm.password })
       navigate('/')
     } catch (err) {
-      // ignore
+      setError('Enrollment or login failed')
     }
   }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
     try {
       await login.mutateAsync(loginForm)
       navigate('/')
     } catch (err) {
-      // ignore
+      setError('Invalid credentials')
     }
   }
 
@@ -45,6 +48,7 @@ export function AuthPage() {
           <h1 className="text-2xl font-semibold">GoRemote</h1>
           <p className="text-sm text-muted">Sign in to control your TVs</p>
         </div>
+        {error && <div className="text-center text-sm text-error">{error}</div>}
         {status?.enrollment_available && (
           <Card>
             <CardHeader>
@@ -56,14 +60,31 @@ export function AuthPage() {
                 <Input placeholder="Username" value={enrollForm.username} onChange={(e) => setEnrollForm({ ...enrollForm, username: e.target.value })} />
                 <Input type="password" placeholder="Password (min 8)" value={enrollForm.password} onChange={(e) => setEnrollForm({ ...enrollForm, password: e.target.value })} />
                 <Input placeholder="Bootstrap token" value={enrollForm.bootstrap_token} onChange={(e) => setEnrollForm({ ...enrollForm, bootstrap_token: e.target.value })} />
-                <Button type="submit" className="w-full" disabled={enroll.isPending}>
-                  {enroll.isPending ? 'Creating...' : 'Create account'}
+                <Button type="submit" className="w-full" disabled={enroll.isPending || login.isPending}>
+                  {enroll.isPending || login.isPending ? 'Creating...' : 'Create account'}
                 </Button>
               </form>
             </CardContent>
           </Card>
         )}
         {status?.has_users && !status?.enrollment_available && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Sign in</CardTitle>
+              <CardDescription>Use your GoRemote credentials</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleLogin} className="space-y-3">
+                <Input placeholder="Username" value={loginForm.username} onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })} />
+                <Input type="password" placeholder="Password" value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} />
+                <Button type="submit" className="w-full" disabled={login.isPending}>
+                  {login.isPending ? 'Signing in...' : 'Sign in'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+        {!isLoading && !status?.has_users && !status?.enrollment_available && (
           <Card>
             <CardHeader>
               <CardTitle>Sign in</CardTitle>
