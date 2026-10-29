@@ -14,6 +14,8 @@ type Discoverer struct{}
 
 func New() *Discoverer { return &Discoverer{} }
 
+func (d *Discoverer) Name() string { return "ssdp" }
+
 func (d *Discoverer) Discover(ctx context.Context, opts discovery.Options) ([]discovery.Result, error) {
 	if opts.Timeout <= 0 {
 		opts.Timeout = 3 * time.Second
@@ -83,14 +85,21 @@ func (d *Discoverer) Discover(ctx context.Context, opts discovery.Options) ([]di
 		if id == "" {
 			id = host
 		}
+		dh := guessDriver(st, usn)
 		r := discovery.Result{
-			ID:         id,
-			Name:       st,
-			Address:    host,
-			Location:   loc,
-			USN:        usn,
-			Source:     "ssdp",
-			DriverHint: guessDriver(st, usn),
+			ID:               id,
+			Name:             friendlyName(st, usn, host),
+			Address:          host,
+			Location:         loc,
+			USN:              usn,
+			Source:           "ssdp",
+			DiscoverySource:  "ssdp",
+			DriverHint:       dh,
+			Driver:           dh,
+			Manufacturer:     guessManufacturer(st, usn),
+			Confidence:       "probable",
+			Experimental:     dh == "vidaa",
+			RequiresPairing:  dh == "vidaa",
 		}
 		if discovery.Validate(r) {
 			results[id] = r
@@ -137,7 +146,45 @@ func guessDriver(st, usn string) string {
 	if strings.Contains(s, "android") || strings.Contains(s, "google") {
 		return "androidtv"
 	}
+	if strings.Contains(s, "hisense") || strings.Contains(s, "vidaa") {
+		return "vidaa"
+	}
 	return ""
+}
+
+func guessManufacturer(st, usn string) string {
+	s := strings.ToLower(st + " " + usn)
+	if strings.Contains(s, "roku") {
+		return "Roku"
+	}
+	if strings.Contains(s, "hisense") {
+		return "Hisense"
+	}
+	if strings.Contains(s, "samsung") {
+		return "Samsung"
+	}
+	if strings.Contains(s, "lg") || strings.Contains(s, "lge") {
+		return "LG"
+	}
+	if strings.Contains(s, "sony") {
+		return "Sony"
+	}
+	return ""
+}
+
+func friendlyName(st, usn, host string) string {
+	s := strings.TrimSpace(st)
+	if s == "" {
+		s = strings.TrimSpace(usn)
+	}
+	if s == "" {
+		return "Unidentified TV candidate (" + host + ")"
+	}
+	// Avoid returning raw UUIDs as names
+	if strings.Contains(s, "uuid:") && len(s) > 40 {
+		return "Unidentified TV candidate (" + host + ")"
+	}
+	return s
 }
 
 func (d *Discoverer) DiscoverRoku(ctx context.Context, opts discovery.Options) ([]discovery.Result, error) {
@@ -210,13 +257,19 @@ func (d *Discoverer) DiscoverRoku(ctx context.Context, opts discovery.Options) (
 			id = "roku-" + host
 		}
 		r := discovery.Result{
-			ID:         id,
-			Name:       st,
-			Address:    host,
-			Location:   loc,
-			USN:        usn,
-			Source:     "ssdp",
-			DriverHint: "roku",
+			ID:               id,
+			Name:             friendlyName(st, usn, host),
+			Address:          host,
+			Location:         loc,
+			USN:              usn,
+			Source:           "ssdp",
+			DiscoverySource:  "ssdp",
+			DriverHint:       "roku",
+			Driver:           "roku",
+			Manufacturer:     "Roku",
+			Confidence:       "verified",
+			Experimental:     false,
+			RequiresPairing:  false,
 		}
 		if discovery.Validate(r) {
 			results[id] = r

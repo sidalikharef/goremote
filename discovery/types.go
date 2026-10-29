@@ -17,15 +17,21 @@ type Options struct {
 
 // Result represents a discovered device.
 type Result struct {
-	ID         string
-	Name       string
-	DriverHint string
-	Address    string
-	Location   string
-	USN        string
-	Model      string
-	Firmware   string
-	Source     string // ssdp, mdns, manual
+	ID             string `json:"id"`
+	Name           string `json:"name"`
+	DriverHint     string `json:"driver_hint,omitempty"`
+	Driver         string `json:"driver,omitempty"`
+	Manufacturer   string `json:"manufacturer,omitempty"`
+	Model          string `json:"model,omitempty"`
+	Firmware       string `json:"firmware,omitempty"`
+	Address        string `json:"address"`
+	Location       string `json:"location,omitempty"`
+	USN            string `json:"usn,omitempty"`
+	Source         string `json:"discovery_source,omitempty"`
+	DiscoverySource string `json:"discovery_source_alias,omitempty"`
+	Confidence     string `json:"confidence,omitempty"`
+	Experimental   bool   `json:"experimental,omitempty"`
+	RequiresPairing bool  `json:"requires_pairing,omitempty"`
 }
 
 // Service defines discovery service interface.

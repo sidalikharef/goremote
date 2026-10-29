@@ -7,6 +7,7 @@ import (
 
 	"github.com/sidalikharef/goremote/config"
 	"github.com/sidalikharef/goremote/discovery"
+	vidaaDisc "github.com/sidalikharef/goremote/discovery/vidaa"
 	"github.com/sidalikharef/goremote/discovery/ssdp"
 	"github.com/sidalikharef/goremote/drivers/roku"
 )
@@ -18,14 +19,18 @@ func (s *Server) handleDiscoverStart(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	d := ssdp.New()
+	ssdpD := ssdp.New()
+	vidaaP := vidaaDisc.New()
+	orch := discovery.NewOrchestrator(discManager, ssdpD, vidaaP)
 	ctx := r.Context()
-	res, err := d.DiscoverRoku(ctx, discovery.Options{Timeout: 3 * time.Second, MaxResults: 20})
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+	res, errs := orch.Discover(ctx, discovery.Options{Timeout: 4 * time.Second, MaxResults: 50})
+	// If providers error but return partial results, still return what we have
+	if len(res) == 0 && len(errs) > 0 {
+		// Still return empty array rather than 500 to not block UI
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]interface{}{"devices": []interface{}{}, "errors": len(errs)})
 		return
 	}
-	res = discManager.Deduplicate(res)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"devices": res})
 }
@@ -69,8 +74,28 @@ func (s *Server) handleDiscoverSave(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-	cfg := &config.Config{Version: 1, Devices: []config.Device{{ID: req.ID, Name: req.Name, Driver: "roku", Address: req.Address}}, Active: req.ID}
-	_ = config.Save(config.DefaultPath(), cfg)
+	existing, err := config.Load(config.DefaultPath())
+	if err != nil {
+		existing = &config.Config{Version: 1, Devices: []config.Device{}}
+	}
+	// replace or add
+	found := false
+	for i := range existing.Devices {
+		if existing.Devices[i].ID == req.ID {
+			existing.Devices[i].Name = req.Name
+			existing.Devices[i].Driver = req.Driver
+			existing.Devices[i].Address = req.Address
+			found = true
+			break
+		}
+	}
+	if !found {
+		existing.Devices = append(existing.Devices, config.Device{ID: req.ID, Name: req.Name, Driver: req.Driver, Address: req.Address})
+	}
+	if existing.Active == "" {
+		existing.Active = req.ID
+	}
+	_ = config.Save(config.DefaultPath(), existing)
 	w.WriteHeader(http.StatusCreated)
 }
 

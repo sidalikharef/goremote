@@ -11,8 +11,16 @@ export type DiscoveredDevice = {
   name: string
   address: string
   driver_hint?: string
+  driver?: string
+  manufacturer?: string
+  model?: string
+  firmware?: string
   location?: string
   usn?: string
+  discovery_source?: string
+  confidence?: string
+  experimental?: boolean
+  requires_pairing?: boolean
 }
 
 export type App = {
